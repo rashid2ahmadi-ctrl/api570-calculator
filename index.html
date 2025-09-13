@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>محاسبه گر هوشمند لوله (API 570 - 4 نقطه)</title>
+    <style>
+        body {
+            font-family: 'Tahoma', sans-serif;
+            background: #f0f4f8;
+            color: #2c3e50;
+            padding: 30px;
+            max-width: 800px;
+            margin: auto;
+            line-height: 1.6;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #2980b9;
+            margin-bottom: 20px;
+        }
+        .subtitle {
+            text-align: center;
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        .date-group {
+            display: flex;
+            gap: 10px;
+        }
+        .date-group input {
+            width: 33%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .four-points {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .four-points input {
+            width: calc(25% - 7px);
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        button {
+            margin-top: 25px;
+            padding: 12px;
+            background-color: #2980b9;
+            color: white;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background-color: #1c5980;
+        }
+        .result {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            line-height: 1.8;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .safe { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .danger { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            border: 1px solid #f5c6cb;
+            display: none;
+        }
+        .print-button {
+            background-color: #28a745;
+            margin-top: 10px;
+        }
+        .print-button:hover {
+            background-color: #1e7e34;
+        }
+        .signatures {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            direction: rtl;
+        }
+        .signature-box {
+            border-top: 1px solid #000;
+            padding-top: 10px;
+            width: 30%;
+            text-align: center;
+            font-size: 14px;
+        }
+        .signature-title {
+            font-weight: bold;
+            margin-bottom: 40px;
+        }
+        @media print {
+            body {
+                padding: 10px;
+                background: white;
+                color: black;
+                max-width: 100%;
+            }
+            button, .print-button {
+                display: none;
+            }
+            .result {
+                box-shadow: none;
+                border: 1px solid #ccc;
+            }
+            .result {
+                word-wrap: break-word;
+            }
+            .report-header {
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            .report-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 30px;
+                font-size: 14px;
+            }
+            .report-table th, .report-table td {
+                border: 1px solid #000;
+                padding: 8px;
+                text-align: right;
+            }
+            .report-table th {
+                background-color: #e0e0e0;
+            }
+            .signatures {
+                display: flex;
+                justify-content: space-between;
+                margin-top: 50px;
+                direction: rtl;
+            }
+            .signature-box {
+                border-top: 1px solid #000;
+                padding-top: 10px;
+                width: 30%;
+                text-align: center;
+                font-size: 12px;
+            }
+        }
+        .report-content {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<!-- لوگو -->
+<div class="logo">
+    <img src="QeshmMovalled_Logo.png" alt="لوگو قشم مولاد" style="max-width: 200px;">
+</div>
+<h1>حلگر هوشمند لوله (API 570)</h1>
+<p class="subtitle">محاسبه با 4 نقطه ضخامت و تاریخ کامل (روز/ماه/سال)</p>
+<h3>داده‌های طراحی لوله</h3>
+<label>قطر خارجی لوله (D) به اینچ</label>
+<input type="number" id="D" step="0.1">
+<label>فشار طراحی (P) به psi</label>
+<input type="number" id="P" step="1">
+<label>تنش مجاز (S) به psi</label>
+<input type="number" id="S" step="100">
+<label>ضریب جوش (E)</label>
+<input type="number" id="E" step="0.01">
+<label>ضریب W</label>
+<input type="number" id="W" step="0.01">
+<label>ضریب Y</label>
+<input type="number" id="Y" step="0.01">
+<label>حداقل ضخامت مورد نیاز (t_min)</label>
+<input type="number" id="tMin" step="0.001">
+<h3>داده‌های خوردگی و بازرسی</h3>
+<label>ضخامت قبلی (t_previous) - میانگین 4 نقطه</label>
+<input type="number" id="tPrevious" step="0.001">
+<label>تاریخ بازرسی قبلی (روز/ماه/سال)</label>
+<div class="date-group">
+    <input type="number" id="prevDay" placeholder="روز" min="1" max="31">
+    <input type="number" id="prevMonth" placeholder="ماه" min="1" max="12">
+    <input type="number" id="prevYear" placeholder="سال" min="1900" max="2100">
+</div>
+<label>ضخامت فعلی — 4 نقطه در یک موضع (CML)</label>
+<div class="four-points">
+    <input type="number" id="t1" placeholder="نقطه 1" step="0.001">
+    <input type="number" id="t2" placeholder="نقطه 2" step="0.001">
+    <input type="number" id="t3" placeholder="نقطه 3" step="0.001">
+    <input type="number" id="t4" placeholder="نقطه 4" step="0.001">
+</div>
+<label>تاریخ بازرسی فعلی (روز/ماه/سال)</label>
+<div class="date-group">
+    <input type="number" id="currDay" placeholder="روز" min="1" max="31">
+    <input type="number" id="currMonth" placeholder="ماه" min="1" max="12">
+    <input type="number" id="currYear" placeholder="سال" min="1900" max="2100" value="2024">
+</div>
+<label>تاریخ برنامه‌ریزی برای بازرسی بعدی (روز/ماه/سال - اختیاری)</label>
+<div class="date-group">
+    <input type="number" id="nextDay" placeholder="روز" min="1" max="31">
+    <input type="number" id="nextMonth" placeholder="ماه" min="1" max="12">
+    <input type="number" id="nextYear" placeholder="سال" min="1900" max="2100" value="2024">
+</div>
+<button onclick="solveWithParams()">محاسبه پارامتر مجهول و نتایج API 570</button>
+<div id="error" class="error"></div>
+<div id="output" class="result" style="display: none;"></div>
+<button id="printButton" class="print-button" style="display: none;" onclick="printReport()">🖨️ چاپ گزارش</button>
+<!-- محتوای گزارش برای چاپ -->
+<div id="reportContent" class="report-content">
+    <div class="report-header">
+        <h2>گزارش نتایج محاسبات API 570</h2>
+        <p>تاریخ گزارش: <span id="reportDate"></span></p>
+    </div>
+    <table class="report-table">
+        <tr>
+            <th>پارامتر</th>
+            <th>مقدار</th>
+            <th>واحد</th>
+        </tr>
+        <tr>
+            <td>قطر خارجی لوله (D)</td>
+            <td id="reportD"></td>
+            <td>اینچ</td>
+        </tr>
+        <tr>
+            <td>فشار طراحی (P)</td>
+            <td id="reportP"></td>
+            <td>psi</td>
+        </tr>
+        <tr>
+            <td>تنش مجاز (S)</td>
+            <td id="reportS"></td>
+            <td>psi</td>
+        </tr>
+        <tr>
+            <td>ضریب جوش (E)</td>
+            <td id="reportE"></td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td>ضریب W</td>
+            <td id="reportW"></td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td>ضریب Y</td>
+            <td id="reportY"></td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td>حداقل ضخامت مورد نیاز (t_min)</td>
+            <td id="reportTMin"></td>
+            <td>اینچ</td>
+        </tr>
+        <tr>
+            <td>ضخامت قبلی (میانگین 4 نقطه)</td>
+            <td id="reportTPrevious"></td>
+            <td>اینچ</td>
+        </tr>
+        <tr>
+            <td>ضخامت فعلی (میانگین 4 نقطه)</td>
+            <td id="reportTActual"></td>
+            <td>اینچ</td>
+        </tr>
+        <tr>
+            <td>نرخ خوردگی (CR)</td>
+            <td id="reportCR"></td>
+            <td>اینچ/سال</td>
+        </tr>
+        <tr>
+            <td>طول عمر باقی‌مانده</td>
+            <td id="reportRemainingLife"></td>
+            <td>سال</td>
+        </tr>
+        <tr>
+            <td>دوره بازرسی بعدی (API 570)</td>
+            <td id="reportInspectionInterval"></td>
+            <td>سال</td>
+        </tr>
+        <tr>
+            <td>تاریخ بازرسی بعدی</td>
+            <td id="reportNextInspectionYear"></td>
+            <td>سال</td>
+        </tr>
+        <tr>
+            <td>وضعیت لوله</td>
+            <td id="reportStatus"></td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td>پارامتر مجهول</td>
+            <td id="reportUnknown"></td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td>مقدار محاسبه شده پارامتر مجهول</td>
+            <td id="reportResult"></td>
+            <td>-</td>
+        </tr>
+    </table>
+    <div class="signatures">
+        <div class="signature-box">
+            <div class="signature-title">مسئول بازرسی</div>
+            <div>امضا: ....................</div>
+            <div>تاریخ: ....................</div>
+        </div>
+        <div class="signature-box">
+            <div class="signature-title">نهاد ناظر</div>
+            <div>امضا: ....................</div>
+            <div>تاریخ: ....................</div>
+        </div>
+        <div class="signature-box">
+            <div class="signature-title">نهاد تایید کننده</div>
+            <div>امضا: ....................</div>
+            <div>تاریخ: ....................</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function dateToYearFraction(day, month, year) {
+        if (!day || !month || !year) return null;
+        const date = new Date(year, month - 1, day);
+        if (isNaN(date.getTime())) return null;
+        const yearStart = new Date(date.getFullYear(), 0, 0);
+        const diff = date - yearStart;
+        const oneDay = 1000 * 60 * 60 * 24;
+        return date.getFullYear() + (diff / oneDay / 365.25);
+    }
+    function avg(arr) {
+        return arr.reduce((a, b) => a + b, 0) / arr.length;
+    }
+    let calculationResults = {};
+
+    function solve() {
+        const fields = {
+            D: parseFloat(document.getElementById("D").value),
+            P: parseFloat(document.getElementById("P").value),
+            S: parseFloat(document.getElementById("S").value),
+            E: parseFloat(document.getElementById("E").value),
+            W: parseFloat(document.getElementById("W").value),
+            Y: parseFloat(document.getElementById("Y").value),
+            tMin: parseFloat(document.getElementById("tMin").value),
+            tPrevious: parseFloat(document.getElementById("tPrevious").value)
+        };
+        const prevDay = parseInt(document.getElementById("prevDay").value);
+        const prevMonth = parseInt(document.getElementById("prevMonth").value);
+        const prevYear = parseInt(document.getElementById("prevYear").value);
+        const t1 = parseFloat(document.getElementById("t1").value);
+        const t2 = parseFloat(document.getElementById("t2").value);
+        const t3 = parseFloat(document.getElementById("t3").value);
+        const t4 = parseFloat(document.getElementById("t4").value);
+        const currDay = parseInt(document.getElementById("currDay").value);
+        const currMonth = parseInt(document.getElementById("currMonth").value);
+        const currYear = parseInt(document.getElementById("currYear").value);
+        const nextDay = parseInt(document.getElementById("nextDay").value) || currDay;
+        const nextMonth = parseInt(document.getElementById("nextMonth").value) || currMonth;
+        const nextYear = parseInt(document.getElementById("nextYear").value) || currYear;
+        const errorDiv = document.getElementById("error");
+        errorDiv.style.display = "none";
+
+        const allFields = {
+            ...fields,
+            prevDay, prevMonth, prevYear,
+            currDay, currMonth, currYear,
+            t1, t2, t3, t4
+        };
+        const unknown = Object.keys(allFields).find(key => isNaN(allFields[key]));
+        if (!unknown) {
+            errorDiv.style.display = "block";
+            errorDiv.innerHTML = "❌ همه پارامترها پر شده‌اند. فقط یکی را خالی بگذارید.";
+            return;
+        }
+
+        let result;
+        try {
+            if (unknown === "tMin") {
+                result = (fields.P * fields.D) / (2 * (fields.S * fields.E * fields.W + fields.P * fields.Y));
+            }
+            else if (unknown === "D") {
+                result = (2 * fields.tMin * (fields.S * fields.E * fields.W + fields.P * fields.Y)) / fields.P;
+            }
+            else if (unknown === "P") {
+                const num = 2 * fields.tMin * fields.S * fields.E * fields.W;
+                const den = fields.D - 2 * fields.tMin * fields.Y;
+                if (den <= 0) throw new Error("محاسبه ناممکن");
+                result = num / den;
+            }
+            else if (unknown === "S") {
+                const num = fields.P * fields.D - 2 * fields.tMin * fields.P * fields.Y;
+                const den = 2 * fields.tMin * fields.E * fields.W;
+                if (den <= 0) throw new Error("محاسبه ناممکن");
+                result = num / den;
+            }
+            else if (unknown === "E") {
+                const num = fields.P * fields.D - 2 * fields.tMin * fields.P * fields.Y;
+                const den = 2 * fields.tMin * fields.S * fields.W;
+                if (den <= 0) throw new Error("محاسبه ناممکن");
+                result = num / den;
+            }
+            else if (unknown === "W") {
+                const num = fields.P * fields.D - 2 * fields.tMin * fields.P * fields.Y;
+                const den = 2 * fields.tMin * fields.S * fields.E;
+                if (den <= 0) throw new Error("محاسبه ناممکن");
+                result = num / den;
+            }
+            else if (unknown === "Y") {
+                const num = fields.P * fields.D - 2 * fields.tMin * fields.S * fields.E * fields.W;
+                const den = 2 * fields.tMin * fields.P;
+                if (den <= 0) throw new Error("محاسبه ناممکن");
+                result = num / den;
+            }
+            else if (unknown === "tPrevious") {
+                const prevDec = dateToYearFraction(prevDay, prevMonth, prevYear);
+                const currDec = dateToYearFraction(currDay, currMonth, currYear);
+                if (!prevDec || !currDec || currDec <= prevDec) {
+                    errorDiv.style.display = "block";
+                    errorDiv.innerHTML = "⚠️ تاریخ بازرسی قبلی باید از فعلی کوچکتر باشد.";
+                    return;
+                }
+                const tActual = avg([t1, t2, t3, t4]);
+                const CR = (fields.tPrevious - tActual) / (currDec - prevDec);
+                result = tActual + CR * (currDec - prevDec);
+            }
+            else if (["t1", "t2", "t3", "t4"].includes(unknown)) {
+                const prevDec = dateToYearFraction(prevDay, prevMonth, prevYear);
+                const currDec = dateToYearFraction(currDay, currMonth, currYear);
+                if (!prevDec || !currDec || currDec <= prevDec) {
+                    errorDiv.style.display = "block";
+                    errorDiv.innerHTML = "⚠️ تاریخ بازرسی قبلی باید از فعلی کوچکتر باشد.";
+                    return;
+                }
+                const CR = (fields.tPrevious - avg([t1, t2, t3, t4])) / (currDec - prevDec);
+                const tActual = fields.tPrevious - CR * (currDec - prevDec);
+                const tSum = t1 + t2 + t3 + t4;
+                result = 4 * tActual - (tSum - (unknown === "t1" ? t1 : unknown === "t2" ? t2 : unknown === "t3" ? t3 : t4));
+            }
+            else {
+                throw new Error("پارامتر مجهول قابل محاسبه نیست");
+            }
+
+            if (["t1", "t2", "t3", "t4"].includes(unknown)) {
+                document.getElementById(unknown).value = result.toFixed(6);
+            } else {
+                fields[unknown] = result;
+            }
+
+            const tActual = avg([t1, t2, t3, t4]);
+            const prevDecimal = dateToYearFraction(prevDay, prevMonth, prevYear);
+            const currDecimal = dateToYearFraction(currDay, currMonth, currYear);
+            const nextDecimal = dateToYearFraction(nextDay, nextMonth, nextYear);
+
+            if (!prevDecimal || !currDecimal || currDecimal <= prevDecimal) {
+                errorDiv.style.display = "block";
+                errorDiv.innerHTML = "⚠️ تاریخ بازرسی قبلی باید از فعلی کوچکتر باشد.";
+                return;
+            }
+
+            const CR = (fields.tPrevious - tActual) / (currDecimal - prevDecimal);
+            if (CR <= 0) {
+                errorDiv.style.display = "block";
+                errorDiv.innerHTML = "⚠️ نرخ خوردگی باید مثبت باشد.";
+                return;
+            }
+
+            const remainingLife = (tActual - fields.tMin) / CR;
+            let inspectionInterval = 10;
+            if (remainingLife > 0) {
+                inspectionInterval = Math.min(remainingLife / 2, 10);
+            }
+            const nextInspectionYear = nextDecimal + inspectionInterval;
+
+            let status = "ایمن";
+            let statusClass = "safe";
+            if (tActual < fields.tMin) {
+                status = "ناایمن";
+                statusClass = "danger";
+            } else if (inspectionInterval < 3) {
+                status = "در آستانه خطر";
+                statusClass = "warning";
+            }
+
+            calculationResults = {
+                fields,
+                prevDay, prevMonth, prevYear,
+                t1, t2, t3, t4,
+                currDay, currMonth, currYear,
+                nextDay, nextMonth, nextYear,
+                tActual,
+                prevDecimal,
+                currDecimal,
+                nextDecimal,
+                CR,
+                remainingLife,
+                inspectionInterval,
+                nextInspectionYear,
+                status,
+                statusClass,
+                unknown,
+                result
+            };
+
+            const output = document.getElementById("output");
+            output.className = "result " + statusClass;
+            output.innerHTML = `
+                <strong>✅ پارامتر مجهول:</strong> ${unknown}<br>
+                <strong>🔍 مقدار محاسبه شده:</strong> ${result.toFixed(4)}<br><br>
+                <strong>📏 ضخامت قبلی (میانگین 4 نقطه):</strong> ${fields.tPrevious.toFixed(3)} اینچ<br>
+                <strong>📏 ضخامت فعلی (میانگین 4 نقطه):</strong> ${tActual.toFixed(3)} اینچ<br>
+                <strong>📊 نرخ خوردگی (CR):</strong> ${CR.toFixed(5)} اینچ/سال<br>
+                <strong>⏳ طول عمر باقی‌مانده:</strong> ${remainingLife.toFixed(1)} سال<br>
+                <strong>📅 دوره بازرسی بعدی (API 570):</strong> ${inspectionInterval.toFixed(1)} سال<br>
+                <strong>📆 تاریخ بازرسی بعدی:</strong> ${Math.floor(nextInspectionYear)}<br>
+                <strong>📌 وضعیت لوله:</strong> ${status}
+            `;
+            output.style.display = "block";
+            document.getElementById("printButton").style.display = "block";
+        } catch (e) {
+            errorDiv.style.display = "block";
+            errorDiv.innerHTML = "⚠️ نمی‌توان پارامتر مجهول را محاسبه کرد. داده‌ها را بررسی کنید.";
+        }
+    }
+
+    function printReport() {
+        document.getElementById("reportDate").textContent = new Date().toLocaleDateString('fa-IR');
+        document.getElementById("reportD").textContent = calculationResults.fields.D.toFixed(4);
+        document.getElementById("reportP").textContent = calculationResults.fields.P.toFixed(4);
+        document.getElementById("reportS").textContent = calculationResults.fields.S.toFixed(4);
+        document.getElementById("reportE").textContent = calculationResults.fields.E.toFixed(4);
+        document.getElementById("reportW").textContent = calculationResults.fields.W.toFixed(4);
+        document.getElementById("reportY").textContent = calculationResults.fields.Y.toFixed(4);
+        document.getElementById("reportTMin").textContent = calculationResults.fields.tMin.toFixed(4);
+        document.getElementById("reportTPrevious").textContent = calculationResults.fields.tPrevious.toFixed(4);
+        document.getElementById("reportTActual").textContent = calculationResults.tActual.toFixed(4);
+        document.getElementById("reportCR").textContent = calculationResults.CR.toFixed(6);
+        document.getElementById("reportRemainingLife").textContent = calculationResults.remainingLife.toFixed(2);
+        document.getElementById("reportInspectionInterval").textContent = calculationResults.inspectionInterval.toFixed(2);
+        document.getElementById("reportNextInspectionYear").textContent = Math.floor(calculationResults.nextInspectionYear);
+        document.getElementById("reportStatus").textContent = calculationResults.status;
+        document.getElementById("reportUnknown").textContent = calculationResults.unknown;
+        document.getElementById("reportResult").textContent = calculationResults.result.toFixed(6);
+
+        const reportContent = document.getElementById("reportContent");
+        const originalBody = document.body.innerHTML;
+        document.body.innerHTML = reportContent.innerHTML;
+        window.print();
+        document.body.innerHTML = originalBody;
+        document.getElementById("printButton").addEventListener("click", printReport);
+    }
+
+    // ✅ تابع جدید: دریافت پارامترها از URL
+    function getUrlParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return {
+            D: urlParams.get('D'),
+            P: urlParams.get('P'),
+            S: urlParams.get('S'),
+            E: urlParams.get('E'),
+            W: urlParams.get('W'),
+            Y: urlParams.get('Y'),
+            tMin: urlParams.get('tMin'),
+            tPrevious: urlParams.get('tPrevious'),
+            prevDay: urlParams.get('prevDay'),
+            prevMonth: urlParams.get('prevMonth'),
+            prevYear: urlParams.get('prevYear'),
+            currDay: urlParams.get('currDay'),
+            currMonth: urlParams.get('currMonth'),
+            currYear: urlParams.get('currYear'),
+            t1: urlParams.get('t1'),
+            t2: urlParams.get('t2'),
+            t3: urlParams.get('t3'),
+            t4: urlParams.get('t4')
+        };
+    }
+
+    // ✅ تابع جدید: بارگذاری داده‌ها و فراخوانی solve()
+    function solveWithParams() {
+        const params = getUrlParams();
+        Object.keys(params).forEach(key => {
+            const el = document.getElementById(key);
+            if (el && params[key]) el.value = params[key];
+        });
+        solve();
+    }
+</script>
+</body>
+</html>
